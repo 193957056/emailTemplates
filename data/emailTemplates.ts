@@ -1,4 +1,5 @@
 import type { EmailTemplate } from '~/types/email'
+import { getWorkWeekRange, getLastWorkdayOfWeek } from '~/utils/dateUtils'
 
 export const emailTemplates: EmailTemplate[] = [
   {
@@ -23,11 +24,8 @@ export const emailTemplates: EmailTemplate[] = [
     title: '问候邮件',
     content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <p style="margin-bottom: 16px;">亲爱的同事：</p>
-      <p style="margin-bottom: 16px;">
-        希望这封邮件找到你时，你一切安好。
-      </p>
-      <p style="margin-bottom: 16px;">
-        在此诚挚地向您致以问候，祝您工作顺利，身体健康！
+      <p style="margin-bottom: 16px; text-indent: 2em;">
+        希望这封邮件找到你时，你一切安好。祝工作顺利，身体健康！
       </p>
       <div style="margin-top: 24px; color: #666;">
         <p style="margin-bottom: 8px;">此致</p>
@@ -48,6 +46,31 @@ export const emailTemplates: EmailTemplate[] = [
       </div>
       <p style="color: #666; font-size: 14px; margin-top: 24px; text-align: right;">
         ——此为自动发送的通知邮件
+      </p>
+    </div>`
+  },
+  {
+    id: 4,
+    name: '私人模板',
+    title: `DP工作周报-姓名 ${getWorkWeekRange()}`,
+    content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
+      <p style="margin-bottom: 16px;">本周工作内容如下：</p>
+      <div style="background-color: #f8f9fa; padding: 16px; border-radius: 4px; margin: 16px 0;">
+        <p style="margin-bottom: 12px;"><strong>1. 本周完成工作:</strong></p>
+        <ul style="margin: 0 0 16px 20px; padding: 0;">
+          <li style="margin-bottom: 8px;">项目A进展...</li>
+          <li style="margin-bottom: 8px;">项目B情况...</li>
+          <li style="margin-bottom: 8px;">日常工作...</li>
+        </ul>
+        <p style="margin-bottom: 12px;"><strong>2. 下周工作计划:</strong></p>
+        <ul style="margin: 0 0 0 20px; padding: 0;">
+          <li style="margin-bottom: 8px;">继续推进项目A...</li>
+          <li style="margin-bottom: 8px;">开始项目C...</li>
+          <li style="margin-bottom: 0;">其他工作安排...</li>
+        </ul>
+      </div>
+      <p style="color: #666; font-size: 14px; margin-top: 24px; text-align: right;">
+        汇报时间：${getLastWorkdayOfWeek()}
       </p>
     </div>`
   }
