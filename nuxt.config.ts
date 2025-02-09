@@ -13,6 +13,7 @@ export default defineNuxtConfig({
       ]
     }
   },
+  // 仅开发环境端口配置
   devServer: {
     port: 3003
   }
