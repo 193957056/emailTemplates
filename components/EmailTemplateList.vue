@@ -102,11 +102,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import type { EmailTemplate } from '~/types/email'
 import { emailTemplates } from '~/data/emailTemplates'
 
-const selectedId = ref<number | null>(null)
+// 将 selectedId 的初始值设置为第一个模板的 id
+const selectedId = ref(emailTemplates[1]?.id || null)
 const searchQuery = ref('')
 const hoveredTemplate = ref<EmailTemplate | null>(null)
 const previewPosition = ref({ top: 0, left: 0 })
@@ -167,6 +168,13 @@ function keepPreview() {
     previewTimer = null
   }
 }
+
+// 在组件挂载时自动选中第一个模板
+onMounted(() => {
+  if (emailTemplates.length > 0) {
+    selectTemplate(emailTemplates[0])
+  }
+})
 </script>
 
 <style scoped>
