@@ -34,8 +34,8 @@ pipeline {
         stage('Deploy with PM2') {
             steps {
                 script {
-                    sh 'pm2 stop frontend-app || true'
-                    sh 'pm2 start dist/app.js --name frontend-app'
+                    sh 'pm2 stop email-editor || true'
+                    sh 'pm2 start dist/app.js --name email-editor'
                 }
             }
         }
