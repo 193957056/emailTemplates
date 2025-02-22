@@ -52,7 +52,7 @@ pnpm build
 ssh user@your-server "mkdir -p /path/to/app"
 
 # 上传构建文件和配置
-scp -r .output ecosystem.config.js user@your-server:/path/to/app/
+scp -r .output ecosystem.config.cjs user@your-server:/path/to/app/
 ```
 
 替换以下内容：
@@ -62,7 +62,7 @@ scp -r .output ecosystem.config.js user@your-server:/path/to/app/
 
 ### 3. 创建 PM2 配置文件
 
-创建 `ecosystem.config.js`：
+创建 `ecosystem.config.cjs`：
 
 ```javascript
 module.exports = {
@@ -89,7 +89,7 @@ module.exports = {
 npm install -g pm2
 
 # 启动应用
-pm2 start ecosystem.config.js
+pm2 start ecosystem.config.cjs
 
 # 其他常用命令
 pm2 list            # 查看应用列表
@@ -99,7 +99,7 @@ pm2 logs           # 查看日志
 ```
 
 注意事项：
-- 修改端口需要在 `ecosystem.config.js` 中更改 `PORT` 值
+- 修改端口需要在 `ecosystem.config.cjs` 中更改 `PORT` 值
 - 修改配置后需要重启应用：`pm2 restart email-editor`
 - 确保端口未被其他服务占用
 - 可以使用 `pm2 logs` 查看运行日志

@@ -35,7 +35,7 @@ pipeline {
             steps {
                 script {
                     sh 'pm2 stop email-editor || true'
-                    sh 'pm2 start ecosystem.config.js'
+                    sh 'pm2 start ecosystem.config.cjs'
                 }
             }
         }
