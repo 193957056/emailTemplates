@@ -42,8 +42,18 @@ pipeline {
     }
 
     post {
-        always {
-            cleanWs()  // 清理工作空间
-        }
+    always {
+        // 只清理 @tmp 等临时目录，保留主工作空间
+        cleanWs(
+            cleanWhenAborted: true,
+            cleanWhenFailure: true,
+            cleanWhenSuccess: true,
+            deleteDirs: true,
+            patterns: [
+                [pattern: '@tmp/**', type: 'INCLUDE'],
+                [pattern: 'node_modules/**', type: 'INCLUDE']
+            ]
+        )
     }
+}
 }
