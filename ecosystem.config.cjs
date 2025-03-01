@@ -1,11 +1,14 @@
-// .output/ecosystem.config.cjs
+// ecosystem.config.cjs
+const path = require('path');
+
 module.exports = {
   apps: [{
     name: 'email-editor',
-    script: './server/index.mjs',  // 使用相对路径（基于 .output 目录）
-    cwd: __dirname,  // 固定工作目录为配置文件所在位置
+    script: './.output/server/index.mjs',  // 从项目根目录指向构建产物
+    cwd: path.resolve(__dirname),         // 工作目录保持项目根目录
     instances: 1,
     autorestart: true,
+    watch: false,
     env: {
       NODE_ENV: 'production',
       PORT: 3003
