@@ -22,15 +22,12 @@ pipeline {
             steps { sh 'pnpm run build' }
         }
 
-        stage('Deploy with PM2') {
+                stage('Deploy with PM2') {
             steps {
                 script {
-                    // 将 PM2 配置文件移动到构建产物目录
-                    sh 'cp ecosystem.config.cjs .output/'
-                    
-                    // 切换到构建目录启动
+                    // 直接使用当前目录的配置文件
                     sh 'pm2 stop email-editor || true'
-                    sh 'cd .output && pm2 start ecosystem.config.cjs'
+                    sh 'pm2 start ecosystem.config.cjs'
                 }
             }
         }
@@ -38,16 +35,19 @@ pipeline {
         stage('Clean Workspace') {
             steps {
                 script {
-                    // 删除除 .output 外的所有内容（包括隐藏文件）
+                    // 删除除 .output 和 ecosystem.config.cjs 外的所有内容
                     sh '''
                         find . -mindepth 1 -maxdepth 1 \
                             ! -name '.output' \
+                            ! -name 'ecosystem.config.cjs' \
                             ! -name '.' \
                             -exec rm -rf {} +
                     '''
                 }
             }
         }
+
+        
     }
 
     post {
