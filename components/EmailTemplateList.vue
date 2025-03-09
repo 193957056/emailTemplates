@@ -102,12 +102,12 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, nextTick } from 'vue'
 import type { EmailTemplate } from '~/types/email'
 import { emailTemplates } from '~/data/emailTemplates'
 
 // 将 selectedId 的初始值设置为第一个模板的 id
-const selectedId = ref(emailTemplates[1]?.id || null)
+const selectedId = ref(emailTemplates[0]?.id || null)
 const searchQuery = ref('')
 const hoveredTemplate = ref<EmailTemplate | null>(null)
 const previewPosition = ref({ top: 0, left: 0 })
@@ -142,10 +142,34 @@ function showPreview(template: EmailTemplate, event: MouseEvent) {
   const rect = target.getBoundingClientRect()
   
   // 计算预览框的位置
-  previewPosition.value = {
-    top: rect.top,
-    left: rect.right + 20 // 在小眼睛右侧20px处
+  const previewWidth = 480 // 预览框宽度
+  const margin = 20 // 边距
+  
+  // 检查右侧空间是否足够
+  const rightSpace = window.innerWidth - rect.right
+  const leftSpace = rect.left
+  
+  let left, top
+  
+  if (rightSpace >= previewWidth + margin) {
+    // 右侧有足够空间
+    left = rect.right + margin
+  } else if (leftSpace >= previewWidth + margin) {
+    // 左侧有足够空间
+    left = rect.left - previewWidth - margin
+  } else {
+    // 两侧都没有足够空间，居中显示并减小宽度
+    left = Math.max(margin, (window.innerWidth - previewWidth) / 2)
   }
+  
+  // 计算垂直位置，确保在视口内
+  top = rect.top
+  const previewHeight = 300 // 预览框估计高度
+  if (top + previewHeight > window.innerHeight) {
+    top = Math.max(margin, window.innerHeight - previewHeight - margin)
+  }
+  
+  previewPosition.value = { top, left }
   
   previewTimer = setTimeout(() => {
     hoveredTemplate.value = template
@@ -171,8 +195,12 @@ function keepPreview() {
 
 // 在组件挂载时自动选中第一个模板
 onMounted(() => {
-  if (emailTemplates.length > 0) {
-    selectTemplate(emailTemplates[0])
+  // 确保在客户端环境下执行
+  if (process.client && emailTemplates.length > 0) {
+    // 使用 nextTick 确保 DOM 已更新
+    nextTick(() => {
+      selectTemplate(emailTemplates[0])
+    })
   }
 })
 </script>
@@ -208,7 +236,7 @@ onMounted(() => {
 /* 确保 line-clamp 在所有浏览器中工作 */
 .line-clamp-2 {
   display: -webkit-box;
-  /* -webkit-line-clamp: 2; */
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }

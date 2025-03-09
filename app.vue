@@ -10,10 +10,12 @@
           <!-- <p class="text-center text-gray-500 mt-2">快速编写并复制邮件内容</p> -->
         </div>
         <div class="flex h-[calc(100vh-88px)]">
-          <EmailTemplateList @select="handleTemplateSelect" />
-          <div class="flex-1 overflow-hidden">
-            <EmailEditor ref="emailEditor" />
-          </div>
+          <ClientOnly>
+            <EmailTemplateList @select="handleTemplateSelect" />
+            <div class="flex-1 overflow-hidden">
+              <EmailEditor ref="emailEditor" />
+            </div>
+          </ClientOnly>
         </div>
       </div>
     </div>
@@ -21,12 +23,19 @@
 </template>
 
 <script setup lang="ts">
+import { ref, nextTick } from 'vue'
 import type { EmailTemplate } from '~/types/email'
 
 const emailEditor = ref<{ applyTemplate: (template: EmailTemplate) => void } | null>(null)
 
 function handleTemplateSelect(template: EmailTemplate) {
-  emailEditor.value?.applyTemplate(template)
+  // 确保在客户端环境下执行
+  if (process.client) {
+    // 使用 nextTick 确保组件已挂载
+    nextTick(() => {
+      emailEditor.value?.applyTemplate(template)
+    })
+  }
 }
 </script>
 
