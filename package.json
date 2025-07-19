@@ -1,22 +1,57 @@
 {
-  "name": "nuxt-app",
-  "private": true,
-  "type": "module",
-  "scripts": {
-    "build": "nuxt build",
-    "dev": "nuxt dev",
-    "generate": "nuxt generate",
-    "preview": "nuxt preview",
-    "postinstall": "nuxt prepare"
-  },
-  "dependencies": {
-    "nuxt": "^3.15.4",
-    "vue": "latest",
-    "vue-router": "latest"
-  },
-  "packageManager": "pnpm@9.9.0+sha512.60c18acd138bff695d339be6ad13f7e936eea6745660d4cc4a776d5247c540d0edee1a563695c183a66eb917ef88f2b4feb1fc25f32a7adcadc7aaf3438e99c1",
-  "devDependencies": {
-    "@nuxtjs/tailwindcss": "^6.13.1",
-    "@tailwindcss/typography": "^0.5.16"
-  }
+    "name": "nuxt-app",
+    "private": true,
+    "type": "module",
+    "engines": {
+        "node": ">=18.0.0",
+        "npm": ">=9.0.0"
+    },
+    "scripts": {
+        "build": "nuxt build",
+        "dev": "nuxt dev",
+        "generate": "nuxt generate",
+        "preview": "nuxt preview",
+        "postinstall": "nuxt prepare",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "type-check": "nuxt typecheck",
+        "audit": "npm audit",
+        "audit:fix": "npm audit fix",
+        "test": "vitest",
+        "test:ui": "vitest --ui",
+        "test:run": "vitest run",
+        "test:coverage": "vitest run --coverage",
+        "test:e2e": "playwright test",
+        "test:e2e:ui": "playwright test --ui",
+        "check-env": "node scripts/check-environment.cjs",
+        "setup-node": "bash scripts/setup-node.sh",
+        "check-env": "node scripts/check-environment.cjs"
+    },
+    "dependencies": {
+        "jszip": "3.10.1",
+        "nuxt": "3.15.4",
+        "vue": "3.4.0",
+        "vue-router": "4.2.5",
+        "dompurify": "^3.0.8"
+    },
+    "packageManager": "pnpm@9.9.0+sha512.60c18acd138bff695d339be6ad13f7e936eea6745660d4cc4a776d5247c540d0edee1a563695c183a66eb917ef88f2b4feb1fc25f32a7adcadc7aaf3438e99c1",
+    "devDependencies": {
+        "@nuxtjs/tailwindcss": "^6.13.1",
+        "@playwright/test": "^1.41.0",
+        "@tailwindcss/typography": "^0.5.16",
+        "@types/dompurify": "^3.0.5",
+        "@typescript-eslint/eslint-plugin": "^6.21.0",
+        "@typescript-eslint/parser": "^6.21.0",
+        "@vitest/coverage-v8": "^1.2.0",
+        "@vitest/ui": "^1.2.0",
+        "@vue/test-utils": "^2.4.4",
+        "eslint": "^8.57.0",
+        "eslint-plugin-vue": "^9.20.1",
+        "happy-dom": "^13.3.1",
+        "jsdom": "^24.0.0",
+        "playwright": "^1.41.0",
+        "typescript": "^5.8.3",
+        "vitest": "^1.2.0",
+        "vue-tsc": "^2.2.12"
+    }
 }

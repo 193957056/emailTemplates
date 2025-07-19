@@ -6,6 +6,7 @@ export const emailTemplates: EmailTemplate[] = [
     id: 1,
     name: '会议邀请模板',
     title: '【会议邀请】项目周会',
+    category: '工作',
     content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <p>亲爱的团队成员：</p>
       <p>现定于明天下午14:00召开项目周会，请准时参加。</p>
@@ -22,6 +23,7 @@ export const emailTemplates: EmailTemplate[] = [
     id: 2,
     name: '问候模板',
     title: '问候邮件',
+    category: '个人',
     content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <p style="margin-bottom: 16px;">亲爱的同事：</p>
       <p style="margin-bottom: 16px; text-indent: 2em;">
@@ -37,6 +39,7 @@ export const emailTemplates: EmailTemplate[] = [
     id: 3,
     name: '通知模板',
     title: '重要通知',
+    category: '工作',
     content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <p style="margin-bottom: 16px;">各位同事：</p>
       <p style="margin-bottom: 16px;">现有重要事项通知如下：</p>
@@ -53,6 +56,7 @@ export const emailTemplates: EmailTemplate[] = [
     id: 4,
     name: '私人模板',
     title: `DP工作周报-姓名 ${getWorkWeekRange()}`,
+    category: '工作',
     content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <p style="margin-bottom: 16px;">本周工作内容如下：</p>
       <div style="background-color: #f8f9fa; padding: 16px; border-radius: 4px; margin: 16px 0;">
@@ -78,6 +82,7 @@ export const emailTemplates: EmailTemplate[] = [
     id: 5,
     name: '感谢信模板',
     title: '感谢信 - 项目支持',
+    category: '正式',
     content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <p style="margin-bottom: 16px;">尊敬的<span style="color: #0066cc; font-weight: 500;">张经理</span>：</p>
       <p style="margin-bottom: 16px; text-indent: 2em;">
@@ -97,6 +102,7 @@ export const emailTemplates: EmailTemplate[] = [
     id: 6,
     name: '请假申请模板',
     title: '请假申请',
+    category: '工作',
     content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <p style="margin-bottom: 16px;">尊敬的领导：</p>
       <p style="margin-bottom: 16px; text-indent: 2em;">
@@ -121,6 +127,7 @@ export const emailTemplates: EmailTemplate[] = [
     id: 7,
     name: '项目进度报告模板',
     title: '项目进度报告 - [项目名称]',
+    category: '工作',
     content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <p style="margin-bottom: 16px;">各位项目相关人员：</p>
       <p style="margin-bottom: 16px;">
@@ -173,6 +180,7 @@ export const emailTemplates: EmailTemplate[] = [
     id: 8,
     name: '培训通知模板',
     title: '【培训通知】[培训主题]',
+    category: '工作',
     content: `<div style="font-family: Arial, sans-serif; line-height: 1.6;">
       <p style="margin-bottom: 16px;">各位同事：</p>
       <p style="margin-bottom: 16px; text-indent: 2em;">

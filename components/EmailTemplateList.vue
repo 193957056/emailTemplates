@@ -1,44 +1,113 @@
 <template>
-  <div class="email-templates w-72 bg-white border-r border-gray-200 min-h-[calc(100vh-88px)]">
+  <div class="email-templates w-full h-full custom-scrollbar">
     <!-- 标题区域 -->
-    <div class="p-4 border-b border-gray-200 bg-gray-50">
-      <h2 class="text-lg font-semibold text-gray-700 flex items-center">
-        <i class="fas fa-envelope-open-text mr-2 text-blue-500"></i>
-        邮件模板
+    <div class="p-6 border-b border-white/20 flex justify-between items-center">
+      <h2 class="text-xl font-bold text-white/90 flex items-center">
+        <svg class="w-6 h-6 mr-3 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+        </svg>
+        模板库
       </h2>
+      <!-- 隐藏按钮区域 -->
+      <!-- <div class="flex items-center gap-2">
+        <button 
+          @click="showAnalytics = true"
+          class="p-2 rounded-full hover:bg-gray-200 transition-colors"
+          title="查看统计分析"
+        >
+          <i class="fas fa-chart-bar text-blue-500"></i>
+        </button>
+        <button 
+          @click="showExportOptions = true"
+          class="p-2 rounded-full hover:bg-gray-200 transition-colors"
+          title="导出模板"
+        >
+          <i class="fas fa-download text-blue-500"></i>
+        </button>
+        <button 
+          @click="showCreateModal = true" 
+          class="p-2 rounded-full hover:bg-gray-200 transition-colors"
+          title="创建新模板"
+        >
+          <i class="fas fa-plus text-blue-500"></i>
+        </button>
+      </div> -->
     </div>
 
     <!-- 搜索框 -->
-    <div class="p-4 border-b border-gray-200">
+    <div class="p-6 border-b border-white/20">
       <div class="relative">
         <input
           v-model="searchQuery"
           type="text"
           placeholder="搜索模板..."
-          class="w-full pl-9 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+          class="w-full pl-11 pr-4 py-3 rounded-xl bg-white/20 backdrop-blur-sm border border-white/30 focus:outline-none focus:ring-2 focus:ring-purple-300/50 focus:border-white/50 text-white placeholder-white/60 font-medium transition-all duration-200"
         />
-        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+        <svg class="w-5 h-5 absolute left-3 top-3.5 text-white/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+        </svg>
+      </div>
+    </div>
+
+    <!-- 分类筛选 -->
+    <div class="p-6 border-b border-white/20">
+      <h3 class="text-sm font-bold text-white/95 mb-3 flex items-center">
+        <svg class="w-4 h-4 mr-2 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.707A1 1 0 013 7V4z"></path>
+        </svg>
+        按分类筛选
+      </h3>
+      <div class="flex flex-wrap gap-2">
+        <button
+          @click="selectedCategory = ''"
+          class="px-4 py-2 text-sm rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+          :class="selectedCategory === '' ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg' : 'bg-white/20 text-white/90 hover:bg-white/30 hover:text-white backdrop-blur-sm border border-white/20'"
+        >
+          全部
+        </button>
+        <button
+          v-for="category in allCategories"
+          :key="category"
+          @click="selectedCategory = category"
+          class="px-4 py-2 text-sm rounded-xl font-medium transition-all duration-200 transform hover:scale-105"
+          :class="selectedCategory === category ? 'bg-gradient-to-r from-purple-500 to-purple-600 text-white shadow-lg' : 'bg-white/20 text-white/90 hover:bg-white/30 hover:text-white backdrop-blur-sm border border-white/20'"
+        >
+          {{ category }}
+        </button>
       </div>
     </div>
 
     <!-- 模板列表 -->
-    <div class="p-4 space-y-2 overflow-y-auto max-h-[calc(100vh-230px)]">
+    <div class="p-6 space-y-3 overflow-y-auto max-h-[calc(100vh-290px)] custom-scrollbar">
       <button
         v-for="template in filteredTemplates"
         :key="template.id"
         @click="selectTemplate(template)"
-        class="w-full text-left p-3 rounded-lg transition-all duration-200 hover:shadow-md group relative"
+        class="w-full text-left p-4 rounded-xl transition-all duration-200 group relative backdrop-blur-sm border transform hover:scale-[1.02]"
         :class="[
           selectedId === template.id
-            ? 'bg-blue-50 text-blue-600 border-blue-200 border'
-            : 'bg-gray-50 hover:bg-white border border-gray-100 hover:border-gray-200'
+            ? 'bg-gradient-to-r from-purple-500/20 to-purple-600/20 text-white border-purple-300/50 shadow-lg shadow-purple-500/20'
+            : 'bg-white/10 hover:bg-white/20 border-white/20 hover:border-white/30 text-white/90 hover:text-white hover:shadow-lg'
         ]"
       >
         <!-- 模板名称 -->
-        <div class="font-medium mb-1">{{ template.name }}</div>
+        <div class="font-semibold mb-2 text-base">{{ template.name }}</div>
+        
+        <!-- 模板分类标签 -->
+        <div class="mb-2">
+          <span class="inline-block px-3 py-1 rounded-full text-xs font-medium"
+            :class="selectedId === template.id 
+              ? 'bg-purple-400/30 text-purple-100 border border-purple-300/30' 
+              : 'bg-white/20 text-white/80 border border-white/20'"
+          >
+            {{ template.category }}
+          </span>
+        </div>
         
         <!-- 模板预览 -->
-        <div class="text-xs text-gray-500 line-clamp-2">
+        <div class="text-sm line-clamp-2"
+          :class="selectedId === template.id ? 'text-white/80' : 'text-white/70'"
+        >
           {{ template.title }}
         </div>
 
@@ -49,7 +118,7 @@
           <div 
             class="relative inline-block"
             @mouseenter="(e: MouseEvent) => showPreview(template, e)"
-            @mouseleave="hidePreview"
+            @mouseleave="startHidePreview"
           >
             <button 
               class="p-1 hover:bg-blue-100 rounded-md"
@@ -66,7 +135,7 @@
                   v-if="hoveredTemplate?.id === template.id"
                   class="preview-popup-wrapper"
                   @mouseenter="keepPreview"
-                  @mouseleave="hidePreview"
+                  @mouseleave="startHidePreview"
                   :style="{
                     top: `${previewPosition.top}px`,
                     left: `${previewPosition.left}px`
@@ -84,9 +153,9 @@
                       </div>
                       <div>
                         <div class="text-xs text-gray-500 mb-1">邮件内容</div>
-                        <div 
+                        <div
                           class="text-sm preview-content"
-                          v-html="template.content"
+                          v-html="sanitizeHTML(template.content)"
                         ></div>
                       </div>
                     </div>
@@ -98,6 +167,72 @@
         </div>
       </button>
     </div>
+
+    <!-- 导出选项模态框 -->
+    <div 
+      v-if="showExportOptions" 
+      class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50"
+      @click.self="showExportOptions = false"
+    >
+      <div class="bg-white rounded-lg shadow-lg w-80 overflow-hidden">
+        <div class="p-4 border-b border-gray-200 flex justify-between items-center bg-gray-50">
+          <h3 class="font-medium text-gray-800">选择导出方式</h3>
+          <button 
+            @click="showExportOptions = false"
+            class="p-2 rounded-full hover:bg-gray-200 transition-colors"
+          >
+            <i class="fas fa-times text-gray-500"></i>
+          </button>
+        </div>
+        <div class="p-4 space-y-3">
+          <button
+            @click="exportCurrentTemplate"
+            class="w-full text-left p-3 rounded-lg transition-all duration-200 border border-gray-200 hover:bg-blue-50 hover:border-blue-200 flex items-center"
+          >
+            <i class="fas fa-file-export text-blue-500 mr-3"></i>
+            <div>
+              <div class="font-medium">导出当前模板</div>
+              <div class="text-xs text-gray-500">导出当前选中的模板为HTML文件</div>
+            </div>
+          </button>
+          
+          <button
+            @click="exportAllTemplates"
+            class="w-full text-left p-3 rounded-lg transition-all duration-200 border border-gray-200 hover:bg-blue-50 hover:border-blue-200 flex items-center"
+          >
+            <i class="fas fa-file-archive text-blue-500 mr-3"></i>
+            <div>
+              <div class="font-medium">导出所有模板</div>
+              <div class="text-xs text-gray-500">将所有模板打包为ZIP文件下载</div>
+            </div>
+          </button>
+          
+          <button
+            @click="exportFilteredTemplates"
+            class="w-full text-left p-3 rounded-lg transition-all duration-200 border border-gray-200 hover:bg-blue-50 hover:border-blue-200 flex items-center"
+          >
+            <i class="fas fa-filter text-blue-500 mr-3"></i>
+            <div>
+              <div class="font-medium">导出筛选结果</div>
+              <div class="text-xs text-gray-500">导出当前筛选的模板列表为ZIP文件</div>
+            </div>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- 分析统计模态框 -->
+    <TemplateAnalytics
+      :is-open="showAnalytics"
+      @close="showAnalytics = false"
+    />
+
+    <!-- 创建模板模态框 -->
+    <CreateTemplateModal 
+      :is-open="showCreateModal" 
+      @close="showCreateModal = false" 
+      @created="handleTemplateCreated" 
+    />
   </div>
 </template>
 
@@ -105,22 +240,52 @@
 import { ref, computed, onMounted, nextTick } from 'vue'
 import type { EmailTemplate } from '~/types/email'
 import { emailTemplates } from '~/data/emailTemplates'
+import CreateTemplateModal from './CreateTemplateModal.vue'
+import TemplateAnalytics from './TemplateAnalytics.vue'
+import { exportTemplateAsHtml, exportTemplatesAsZip } from '~/utils/exportUtils'
+
+// 使用安全 HTML 处理
+const { sanitizeHTML } = useSafeHTML()
 
 // 将 selectedId 的初始值设置为第一个模板的 id
 const selectedId = ref(emailTemplates[0]?.id || null)
 const searchQuery = ref('')
 const hoveredTemplate = ref<EmailTemplate | null>(null)
 const previewPosition = ref({ top: 0, left: 0 })
+const selectedCategory = ref('')
+const showCreateModal = ref(false)
+const showExportOptions = ref(false)
+const showAnalytics = ref(false)
 let previewTimer: NodeJS.Timeout | null = null
+let hidePreviewTimer: NodeJS.Timeout | null = null
+
+// 获取所有分类
+const allCategories = computed(() => {
+  const categories = [...new Set(emailTemplates.map(template => template.category))]
+  return categories
+})
 
 // 过滤模板
 const filteredTemplates = computed(() => {
-  if (!searchQuery.value) return emailTemplates
-  const query = searchQuery.value.toLowerCase()
-  return emailTemplates.filter(template => 
-    template.name.toLowerCase().includes(query) || 
-    template.title.toLowerCase().includes(query)
-  )
+  let templates = emailTemplates
+  
+  // 按分类筛选
+  if (selectedCategory.value) {
+    templates = templates.filter(template => 
+      template.category === selectedCategory.value
+    )
+  }
+  
+  // 按搜索关键词筛选
+  if (searchQuery.value) {
+    const query = searchQuery.value.toLowerCase()
+    templates = templates.filter(template => 
+      template.name.toLowerCase().includes(query) || 
+      template.title.toLowerCase().includes(query)
+    )
+  }
+  
+  return templates
 })
 
 const emit = defineEmits<{
@@ -135,6 +300,11 @@ function selectTemplate(template: EmailTemplate) {
 function showPreview(template: EmailTemplate, event: MouseEvent) {
   if (previewTimer) {
     clearTimeout(previewTimer)
+  }
+  
+  if (hidePreviewTimer) {
+    clearTimeout(hidePreviewTimer)
+    hidePreviewTimer = null
   }
   
   // 获取触发元素的位置
@@ -176,30 +346,68 @@ function showPreview(template: EmailTemplate, event: MouseEvent) {
   }, 100)
 }
 
-function hidePreview() {
-  if (previewTimer) {
-    clearTimeout(previewTimer)
-    previewTimer = null
+function startHidePreview() {
+  if (hidePreviewTimer) {
+    clearTimeout(hidePreviewTimer)
   }
-  setTimeout(() => {
+  
+  hidePreviewTimer = setTimeout(() => {
     hoveredTemplate.value = null
-  }, 100)
+    hidePreviewTimer = null
+  }, 200)
 }
 
 function keepPreview() {
-  if (previewTimer) {
-    clearTimeout(previewTimer)
-    previewTimer = null
+  if (hidePreviewTimer) {
+    clearTimeout(hidePreviewTimer)
+    hidePreviewTimer = null
   }
+}
+
+function handleTemplateCreated(template: EmailTemplate) {
+  // 选中新创建的模板
+  selectedId.value = template.id
+  emit('select', template)
+  
+  // 显示成功提示
+  alert('模板创建成功！')
+}
+
+// 导出当前选中的模板
+function exportCurrentTemplate() {
+  const template = emailTemplates.find(t => t.id === selectedId.value)
+  if (template) {
+    exportTemplateAsHtml(template)
+    showExportOptions.value = false
+  } else {
+    alert('请先选择一个模板')
+  }
+}
+
+// 导出所有模板
+async function exportAllTemplates() {
+  await exportTemplatesAsZip(emailTemplates)
+  showExportOptions.value = false
+}
+
+// 导出筛选后的模板
+async function exportFilteredTemplates() {
+  if (filteredTemplates.value.length === 0) {
+    alert('当前没有符合筛选条件的模板')
+    return
+  }
+  
+  await exportTemplatesAsZip(filteredTemplates.value)
+  showExportOptions.value = false
 }
 
 // 在组件挂载时自动选中第一个模板
 onMounted(() => {
   // 确保在客户端环境下执行
-  if (process.client && emailTemplates.length > 0) {
+  if (import.meta.client && emailTemplates.length > 0) {
     // 使用 nextTick 确保 DOM 已更新
     nextTick(() => {
-      selectTemplate(emailTemplates[0])
+      emit('select', emailTemplates[0])
     })
   }
 })
@@ -245,102 +453,48 @@ onMounted(() => {
 .preview-popup-wrapper {
   position: fixed;
   z-index: 9999;
-  pointer-events: none;
-  transform: translateY(-50%); /* 垂直居中对齐 */
+  pointer-events: auto;
 }
 
 .preview-popup {
-  pointer-events: auto;
   width: 480px;
-  background: white;
+  max-height: 400px;
+  background-color: white;
   border-radius: 8px;
-  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.15);
-  border: 1px solid #e5e7eb;
-  position: relative;
-}
-
-/* 添加箭头 */
-.preview-popup::before {
-  content: '';
-  position: absolute;
-  left: -6px;
-  top: 50%;
-  width: 12px;
-  height: 12px;
-  background: white;
-  border-left: 1px solid #e5e7eb;
-  border-bottom: 1px solid #e5e7eb;
-  transform: translateY(-50%) rotate(45deg);
-}
-
-/* 调整动画 */
-.fade-enter-active,
-.fade-leave-active {
-  transition: all 0.2s ease;
-}
-
-.fade-enter-from {
-  opacity: 0;
-  transform: translateY(-50%) translateX(10px);
-}
-
-.fade-leave-to {
-  opacity: 0;
-  transform: translateY(-50%) translateX(-10px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  overflow: hidden;
+  border: 1px solid #e2e8f0;
 }
 
 .preview-header {
-  padding: 0.75rem 1rem;
-  border-bottom: 1px solid #e5e7eb;
+  background-color: #f8fafc;
+  padding: 12px 16px;
   font-weight: 600;
-  color: #1f2937;
-  background-color: #f9fafb;
-  border-radius: 8px 8px 0 0;
-  font-size: 0.875rem;
+  border-bottom: 1px solid #e2e8f0;
+  display: flex;
+  align-items: center;
 }
 
 .preview-body {
-  padding: 1rem;
-  max-height: 500px;
+  padding: 16px;
+  max-height: 340px;
   overflow-y: auto;
 }
 
 .preview-content {
-  padding: 1.25rem;
-  background-color: #f9fafb;
-  border: 1px solid #e5e7eb;
-  border-radius: 6px;
-  color: #374151;
-  font-size: 0.875rem;
-  line-height: 1.6;
+  max-height: 200px;
+  overflow-y: auto;
+  padding: 8px;
+  background-color: #f8fafc;
+  border-radius: 4px;
+  border: 1px solid #e2e8f0;
 }
 
-.preview-content :deep(p) {
-  margin-bottom: 1rem;
-  line-height: 1.6;
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s ease;
 }
 
-.preview-content :deep(p:last-child) {
-  margin-bottom: 0;
-}
-
-.preview-content :deep(ul) {
-  list-style-type: disc;
-  padding-left: 1.5rem;
-  margin: 1rem 0;
-}
-
-.preview-content :deep(li) {
-  margin-bottom: 0.75rem;
-  line-height: 1.6;
-}
-
-.preview-content :deep(li:last-child) {
-  margin-bottom: 0;
-}
-
-.preview-content :deep(strong) {
-  font-weight: 600;
-  color: #1f2937;
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
 }
 </style> 
