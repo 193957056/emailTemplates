@@ -58,7 +58,6 @@
             @input="handleContentChange"
             @paste="handlePaste"
             @keydown="handleKeydown"
-            v-html="sanitizedContent"
             role="textbox"
             aria-multiline="true"
             :aria-describedby="validationErrors.content ? 'content-error' : undefined"
@@ -104,6 +103,25 @@
       </div>
 
       <div class="flex items-center gap-3">
+        <!-- 获取上次保存结果按钮 -->
+        <button
+          @click="handleLoadSaved"
+          :class="[
+            'flex items-center transition-all duration-300',
+            hasDraft ? 'btn-primary animate-pulse-subtle' : 'btn-secondary',
+            !hasDraft && 'opacity-50'
+          ]"
+          :disabled="!hasDraft"
+        >
+          <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path>
+          </svg>
+          恢复草稿
+          <span v-if="hasDraft" class="ml-2 px-2 py-0.5 text-xs bg-white/20 rounded-full">
+            有草稿
+          </span>
+        </button>
+        
         <!-- 保存按钮 -->
         <button
           @click="handleSave"
@@ -129,7 +147,7 @@
       @insert-table="insertTable"
     />
 
-    <!-- 保存成功提示 -->
+    <!-- 操作成功提示 -->
     <Transition name="fade">
       <div
         v-if="showSaveSuccess"
@@ -141,8 +159,8 @@
           </svg>
         </div>
         <div>
-          <p class="text-white font-semibold">保存成功</p>
-          <p class="text-white/80 text-sm">草稿已自动保存到本地</p>
+          <p class="text-white font-semibold">{{ successMessage }}</p>
+          <p class="text-white/80 text-sm">{{ successSubMessage }}</p>
         </div>
       </div>
     </Transition>
@@ -160,7 +178,7 @@ import TableDialog from './editor/TableDialog.vue'
 const { sanitizeHTML } = useSafeHTML()
 const { validateTemplate } = useValidation()
 const {
-  saveToLocalStorage: saveToStorage,
+  saveToLocalStorage,
   loadFromLocalStorage,
   hasLocalStorage,
   cleanupExpiredStorage
@@ -197,15 +215,18 @@ const {
 // 响应式数据
 const title = ref('')
 const content = ref('')
+const currentTemplateId = ref<number | null>(null) // 当前模板ID
 const editorElement = ref<HTMLElement | null>(null)
 const showLinkDialog = ref(false)
 const showTableDialog = ref(false)
 const showSaveSuccess = ref(false)
+const successMessage = ref('保存成功')
+const successSubMessage = ref('草稿已自动保存到本地')
 const autoSaveStatus = ref<'saving' | 'saved' | 'error'>('saved')
 const validationErrors = ref<EmailValidationErrors>({})
+const draftCheckTrigger = ref(0) // 用于触发草稿检查的响应式更新
 
 // 计算属性
-const sanitizedContent = computed(() => sanitizeHTML(content.value))
 const wordCount = computed(() => {
   const text = content.value.replace(/<[^>]*>/g, '')
   return text.trim().length
@@ -220,17 +241,58 @@ const autoSaveStatusText = computed(() => {
   }
 })
 
+// 检查是否有草稿存在
+const hasDraft = computed(() => {
+  // 依赖draftCheckTrigger来触发重新计算
+  draftCheckTrigger.value
+  return hasLocalStorage(currentTemplateId.value)
+})
+
 // 方法
 const handleTitleChange = () => {
   validateForm()
-  autoSave()
+  // 移除实时自动保存
+  // autoSave()
 }
+
+// 添加一个标记来跟踪是否是用户编辑
+const isUserEditing = ref(true)
 
 const handleContentChange = () => {
   if (editorElement.value) {
+    // 保存当前光标位置
+    const selection = window.getSelection()
+    const range = selection?.rangeCount ? selection.getRangeAt(0) : null
+    const caretPosition = range ? {
+      startContainer: range.startContainer,
+      startOffset: range.startOffset,
+      endContainer: range.endContainer,
+      endOffset: range.endOffset
+    } : null
+    
     content.value = editorElement.value.innerHTML
     validateForm()
-    autoSave()
+    
+    // 移除实时自动保存
+    // if (isUserEditing.value) {
+    //   autoSave()
+    // }
+    
+    // 恢复光标位置
+    if (caretPosition && selection) {
+      nextTick(() => {
+        try {
+          const newRange = document.createRange()
+          newRange.setStart(caretPosition.startContainer, caretPosition.startOffset)
+          newRange.setEnd(caretPosition.endContainer, caretPosition.endOffset)
+          selection.removeAllRanges()
+          selection.addRange(newRange)
+        } catch (error) {
+          // 如果恢复光标失败，不影响用户操作
+          console.debug('恢复光标位置失败，可能是DOM结构已改变', error)
+        }
+      })
+    }
   }
 }
 
@@ -308,7 +370,7 @@ const autoSave = () => {
   if (title.value || content.value) {
     autoSaveStatus.value = 'saving'
     try {
-      saveToStorage(title.value, content.value)
+      saveToLocalStorage(title.value, content.value)
       autoSaveStatus.value = 'saved'
     } catch (error) {
       console.error('自动保存失败:', error)
@@ -317,21 +379,18 @@ const autoSave = () => {
   }
 }
 
-const saveToLocalStorage = () => {
-  try {
-    saveToStorage(title.value, content.value)
-    autoSaveStatus.value = 'saved'
-    console.log('手动保存成功')
-  } catch (error) {
-    console.error('保存失败:', error)
-    autoSaveStatus.value = 'error'
-  }
-}
 
 const handleSave = () => {
   try {
-    saveToStorage(title.value, content.value)
+    saveToLocalStorage(title.value, content.value, currentTemplateId.value)
     autoSaveStatus.value = 'saved'
+    
+    // 触发草稿检查更新
+    draftCheckTrigger.value++
+    
+    // 设置成功消息
+    successMessage.value = '保存成功'
+    successSubMessage.value = currentTemplateId.value ? '草稿已保存到当前模板' : '草稿已保存到本地'
     
     // 显示保存成功提示
     showSaveSuccess.value = true
@@ -340,8 +399,6 @@ const handleSave = () => {
     setTimeout(() => {
       showSaveSuccess.value = false
     }, 2000)
-    
-    console.log('手动保存成功')
   } catch (error) {
     console.error('保存失败:', error)
     autoSaveStatus.value = 'error'
@@ -349,15 +406,64 @@ const handleSave = () => {
 }
 
 const loadSavedContent = () => {
-  const savedData = loadFromLocalStorage()
+  const savedData = loadFromLocalStorage(currentTemplateId.value)
+  
   if (savedData) {
+    // 临时禁用用户编辑标记
+    isUserEditing.value = false
+    
     title.value = savedData.title
     content.value = savedData.content
+    
+    // 确保编辑器准备好后再设置内容
     nextTick(() => {
       if (editorElement.value) {
-        editorElement.value.innerHTML = content.value
+        // 使用 sanitizeHTML 确保内容安全
+        editorElement.value.innerHTML = sanitizeHTML(savedData.content)
       }
+      
+      // 恢复用户编辑标记
+      setTimeout(() => {
+        isUserEditing.value = true
+      }, 100)
     })
+  }
+}
+
+const handleLoadSaved = () => {
+  const savedData = loadFromLocalStorage(currentTemplateId.value)
+  
+  if (savedData) {
+    // 临时禁用用户编辑标记
+    isUserEditing.value = false
+    
+    title.value = savedData.title
+    content.value = savedData.content
+    
+    // 更新编辑器内容
+    nextTick(() => {
+      if (editorElement.value) {
+        editorElement.value.innerHTML = sanitizeHTML(savedData.content)
+      }
+      
+      // 恢复用户编辑标记
+      setTimeout(() => {
+        isUserEditing.value = true
+      }, 100)
+    })
+    
+    // 设置成功消息
+    successMessage.value = '恢复成功'
+    successSubMessage.value = currentTemplateId.value ? '已恢复当前模板的草稿' : '已恢复上次保存的草稿'
+    
+    // 显示成功提示
+    announce('已恢复上次保存的草稿', 'polite')
+    showSaveSuccess.value = true
+    setTimeout(() => {
+      showSaveSuccess.value = false
+    }, 2000)
+  } else {
+    announce('没有找到保存的草稿', 'polite')
   }
 }
 
@@ -366,17 +472,29 @@ onMounted(() => {
   // 设置编辑器引用
   setEditorRef(editorElement.value)
 
-  // 清理过期存储
-  cleanupExpiredStorage()
+  // 延迟初始化，确保编辑器完全准备好
+  nextTick(() => {
+    // 触发草稿检查，让按钮显示正确状态
+    draftCheckTrigger.value++
+    
+    // 设置可访问性属性
+    if (editorElement.value) {
+      setAriaAttributes(editorElement.value, {
+        'aria-label': '邮件内容编辑器',
+        'aria-describedby': 'editor-help',
+        'aria-multiline': 'true',
+        'role': 'textbox'
+      })
+    }
 
-  // 加载保存的内容
-  if (hasLocalStorage()) {
-    loadSavedContent()
-  }
+    // 聚焦编辑器
+    focusEditor()
+    announce('邮件编辑器已准备就绪', 'polite')
+  })
 
   // 初始化快捷键
   initDefaultShortcuts({
-    save: saveToLocalStorage,
+    save: handleSave,
     undo: () => executeCommand('undo'),
     redo: () => executeCommand('redo'),
     bold: () => executeCommand('bold'),
@@ -389,22 +507,6 @@ onMounted(() => {
       }
     }
   })
-
-  // 设置可访问性属性
-  if (editorElement.value) {
-    setAriaAttributes(editorElement.value, {
-      'aria-label': '邮件内容编辑器',
-      'aria-describedby': 'editor-help',
-      'aria-multiline': 'true',
-      'role': 'textbox'
-    })
-  }
-
-  // 聚焦编辑器
-  nextTick(() => {
-    focusEditor()
-    announce('邮件编辑器已准备就绪', 'polite')
-  })
 })
 
 // 监听编辑器元素变化
@@ -414,20 +516,39 @@ watch(editorElement, (newElement) => {
 
 // 应用模板的方法
 const applyTemplate = (template: EmailTemplate) => {
+  // 临时禁用用户编辑标记
+  isUserEditing.value = false
+  
+  // 记录当前模板ID
+  currentTemplateId.value = template.id
+  
+  // 不再自动加载草稿，只显示模板默认内容
   title.value = template.title
   content.value = template.content
   
   // 更新编辑器内容
   nextTick(() => {
     if (editorElement.value) {
-      editorElement.value.innerHTML = template.content
+      // 使用 sanitizeHTML 确保内容安全
+      editorElement.value.innerHTML = sanitizeHTML(content.value)
     }
     // 触发验证
     validateForm()
-    // 自动保存
-    autoSave()
-    // 宣布模板已应用
-    announce(`已应用模板：${template.name}`, 'polite')
+    
+    // 触发草稿检查更新
+    draftCheckTrigger.value++
+    
+    // 检查是否有草稿，如果有则高亮按钮
+    if (hasLocalStorage(template.id)) {
+      announce(`已应用模板：${template.name}（有未恢复的草稿）`, 'polite')
+    } else {
+      announce(`已应用模板：${template.name}`, 'polite')
+    }
+    
+    // 恢复用户编辑标记
+    setTimeout(() => {
+      isUserEditing.value = true
+    }, 100)
   })
 }
 
@@ -439,13 +560,14 @@ defineExpose({
   setContent: (newContent: string) => {
     content.value = newContent
     if (editorElement.value) {
-      editorElement.value.innerHTML = newContent
+      // 使用 sanitizeHTML 确保内容安全
+      editorElement.value.innerHTML = sanitizeHTML(newContent)
     }
   },
   applyTemplate,
   focus: focusEditor,
   validate: validateForm,
-  save: saveToLocalStorage
+  save: handleSave
 })
 </script>
 

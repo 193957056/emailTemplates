@@ -247,8 +247,8 @@ import { exportTemplateAsHtml, exportTemplatesAsZip } from '~/utils/exportUtils'
 // 使用安全 HTML 处理
 const { sanitizeHTML } = useSafeHTML()
 
-// 将 selectedId 的初始值设置为第一个模板的 id
-const selectedId = ref(emailTemplates[0]?.id || null)
+// 初始化时不选中任何模板，避免覆盖本地保存的内容
+const selectedId = ref<number | null>(null)
 const searchQuery = ref('')
 const hoveredTemplate = ref<EmailTemplate | null>(null)
 const previewPosition = ref({ top: 0, left: 0 })
@@ -401,14 +401,33 @@ async function exportFilteredTemplates() {
   showExportOptions.value = false
 }
 
-// 在组件挂载时自动选中第一个模板
+// 在组件挂载时检查是否需要自动选中模板
 onMounted(() => {
   // 确保在客户端环境下执行
   if (import.meta.client && emailTemplates.length > 0) {
-    // 使用 nextTick 确保 DOM 已更新
-    nextTick(() => {
-      emit('select', emailTemplates[0])
-    })
+    // 检查是否有任何本地保存的内容
+    let hasAnyLocalContent = false
+    
+    try {
+      const storedData = localStorage.getItem('email_editor_draft')
+      if (storedData) {
+        const parsed = JSON.parse(storedData)
+        // 检查新格式或旧格式
+        if ((parsed.version && parsed.drafts && Object.keys(parsed.drafts).length > 0) || 
+            (parsed.title !== undefined)) {
+          hasAnyLocalContent = true
+        }
+      }
+    } catch (e) {
+      // 忽略解析错误
+    }
+    
+    if (!hasAnyLocalContent) {
+      // 只有在没有任何本地保存内容时，才自动选中第一个模板
+      nextTick(() => {
+        emit('select', emailTemplates[0])
+      })
+    }
   }
 })
 </script>

@@ -18,11 +18,29 @@ export const useRichTextEditor = () => {
     if (!import.meta.client) return
 
     try {
+      // 保存当前光标位置
+      const selection = window.getSelection()
+      const range = selection?.rangeCount ? selection.getRangeAt(0) : null
+      
       document.execCommand(command, false, value)
 
       // 保持编辑器焦点
       if (editorRef.value) {
         editorRef.value.focus()
+        
+        // 如果有保存的光标位置，尝试恢复
+        if (range && selection && selection.rangeCount > 0) {
+          try {
+            // 对于某些命令，光标会自动保持在正确位置
+            // 只有在需要时才手动恢复
+            if (['insertHTML', 'insertImage', 'insertHorizontalRule'].includes(command)) {
+              // 这些命令会改变DOM结构，让浏览器自己处理光标
+              return
+            }
+          } catch (error) {
+            console.debug('恢复光标位置时出错', error)
+          }
+        }
       }
     } catch (error) {
       console.error(`执行命令 ${command} 失败:`, error)

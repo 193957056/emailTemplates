@@ -221,6 +221,14 @@
     .btn-secondary:focus {
         @apply ring-pink-300;
     }
+    .btn-secondary:disabled {
+        @apply opacity-50 cursor-not-allowed transform-none;
+        box-shadow: 0 2px 8px 0 rgba(240, 147, 251, 0.2);
+    }
+    .btn-secondary:disabled:hover {
+        @apply transform-none;
+        box-shadow: 0 2px 8px 0 rgba(240, 147, 251, 0.2);
+    }
     
     .btn-outline {
         @apply px-6 py-3 rounded-xl font-medium transition-all duration-300 transform hover:scale-105 focus:outline-none focus:ring-4 focus:ring-opacity-50;
@@ -432,6 +440,10 @@
         animation: bounce-subtle 3s ease-in-out infinite;
     }
     
+    .animate-pulse-subtle {
+        animation: pulse-subtle 2s ease-in-out infinite;
+    }
+    
     /* 自定义动画定义 */
     @keyframes float {
         0%, 100% { transform: translateY(0px); }
@@ -446,6 +458,19 @@
     @keyframes bounce-subtle {
         0%, 100% { transform: translateY(0px); }
         50% { transform: translateY(-5px); }
+    }
+    
+    @keyframes pulse-subtle {
+        0%, 100% { 
+            opacity: 1;
+            transform: scale(1);
+            box-shadow: 0 4px 15px 0 rgba(102, 126, 234, 0.4);
+        }
+        50% { 
+            opacity: 0.95;
+            transform: scale(1.02);
+            box-shadow: 0 8px 25px 0 rgba(102, 126, 234, 0.6);
+        }
     }
     
     /* 渐变文字效果 */

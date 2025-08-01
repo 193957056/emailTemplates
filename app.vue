@@ -130,28 +130,28 @@ const showTemplateListMobile = ref(false)
 const showResponsiveModal = ref(false)
 const currentTemplate = ref<EmailTemplate | null>(null)
 const windowWidth = ref(0)
+const currentTime = ref('')
+const shortTime = ref('')
+let timeUpdateInterval: number | null = null
 
 // 计算属性
 const isMobile = computed(() => windowWidth.value < 1024)
 
-const currentTime = computed(() => {
+// 更新时间的函数
+function updateTime() {
   const now = new Date()
-  return now.toLocaleString('zh-CN', {
+  currentTime.value = now.toLocaleString('zh-CN', {
     year: 'numeric',
     month: '2-digit',
     day: '2-digit',
     hour: '2-digit',
     minute: '2-digit'
   })
-})
-
-const shortTime = computed(() => {
-  const now = new Date()
-  return now.toLocaleString('zh-CN', {
+  shortTime.value = now.toLocaleString('zh-CN', {
     hour: '2-digit',
     minute: '2-digit'
   })
-})
+}
 
 // 方法
 function handleTemplateSelect(template: EmailTemplate) {
@@ -221,6 +221,12 @@ onMounted(() => {
     updateWindowWidth()
     window.addEventListener('resize', handleResize)
     document.addEventListener('keydown', handleEscapeKey)
+    
+    // 初始化时间显示
+    updateTime()
+    
+    // 每秒更新一次时间
+    timeUpdateInterval = window.setInterval(updateTime, 1000)
   }
 })
 
@@ -228,6 +234,11 @@ onUnmounted(() => {
   if (import.meta.client) {
     window.removeEventListener('resize', handleResize)
     document.removeEventListener('keydown', handleEscapeKey)
+    
+    // 清理定时器
+    if (timeUpdateInterval) {
+      window.clearInterval(timeUpdateInterval)
+    }
   }
 })
 </script>

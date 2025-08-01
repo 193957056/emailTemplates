@@ -42,8 +42,8 @@ export const useValidation = () => {
       errors.title = '标题不能为空'
     } else if (template.title.length > 200) {
       errors.title = '标题长度不能超过200字符'
-    } else if (template.title.length < 2) {
-      errors.title = '标题长度不能少于2字符'
+    } else if (template.title.length < 1) {
+      errors.title = '标题长度不能少于1字符'
     }
 
     // 验证内容
@@ -51,8 +51,8 @@ export const useValidation = () => {
       errors.content = '内容不能为空'
     } else if (template.content.length > 50000) {
       errors.content = '内容长度不能超过50000字符'
-    } else if (template.content.length < 10) {
-      errors.content = '内容长度不能少于10字符'
+    } else if (template.content.length < 1) {
+      errors.content = '内容长度不能少于1字符'
     }
 
     // 验证名称
