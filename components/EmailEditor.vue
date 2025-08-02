@@ -25,7 +25,7 @@
     </div>
 
     <!-- 内容编辑器 -->
-    <div class="flex-1 flex flex-col">
+    <div class="flex-1 flex flex-col overflow-hidden">
       <label class="block text-sm font-bold text-white/90 mb-3 px-6 pt-4 flex items-center">
         <svg class="w-5 h-5 mr-2 text-purple-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path>
@@ -33,7 +33,7 @@
         邮件内容
       </label>
 
-      <div class="flex-1 flex flex-col mx-6 mb-6 glass-ultra rounded-2xl overflow-hidden">
+      <div class="flex-1 flex flex-col mx-6 mb-6 glass-ultra rounded-2xl overflow-hidden min-h-0">
         <!-- 富文本工具栏 -->
         <RichTextToolbar
           :current-color="currentColor"
@@ -50,11 +50,11 @@
         />
 
         <!-- 编辑器内容区域 -->
-        <div class="flex-1 p-4 relative">
+        <div class="flex-1 p-4 relative overflow-hidden">
           <div
             ref="editorElement"
             contenteditable="true"
-            class="editor-area w-full p-6 outline-none overflow-auto min-h-[300px] text-gray-800 custom-scrollbar rounded-xl relative z-10"
+            class="editor-area w-full h-full p-6 outline-none overflow-y-auto text-gray-800 custom-scrollbar rounded-xl relative z-10"
             @input="handleContentChange"
             @paste="handlePaste"
             @keydown="handleKeydown"
@@ -88,16 +88,18 @@
     </div>
 
     <!-- 底部操作栏 -->
-    <div class="p-4 border-t border-gray-200 bg-gray-50 flex justify-between items-center">
+    <div class="p-4 border-t border-white/20 glass-ultra flex justify-between items-center flex-shrink-0">
       <div class="flex items-center gap-4">
         <!-- 自动保存状态 -->
-        <div class="flex items-center gap-2 text-sm text-gray-500">
-          <i class="fas fa-save" :class="{ 'text-green-500': autoSaveStatus === 'saved' }"></i>
+        <div class="flex items-center gap-2 text-sm text-white/70">
+          <svg class="w-4 h-4" :class="{ 'text-green-400': autoSaveStatus === 'saved' && hasDraft }" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3-3m0 0l-3 3m3-3v12"></path>
+          </svg>
           <span>{{ autoSaveStatusText }}</span>
         </div>
 
         <!-- 字数统计 -->
-        <div class="text-sm text-gray-500">
+        <div class="text-sm text-white/70">
           字数: {{ wordCount }}
         </div>
       </div>
@@ -233,11 +235,16 @@ const wordCount = computed(() => {
 })
 
 const autoSaveStatusText = computed(() => {
+  // 首先检查是否有任何保存的内容
+  if (!hasDraft.value && autoSaveStatus.value !== 'saving') {
+    return '未保存'
+  }
+  
   switch (autoSaveStatus.value) {
     case 'saving': return '保存中...'
     case 'saved': return '已保存'
     case 'error': return '保存失败'
-    default: return ''
+    default: return '未保存'
   }
 })
 

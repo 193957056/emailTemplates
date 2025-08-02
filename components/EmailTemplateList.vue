@@ -1,5 +1,5 @@
 <template>
-  <div class="email-templates w-full h-full custom-scrollbar">
+  <div class="email-templates w-full h-full flex flex-col">
     <!-- 标题区域 -->
     <div class="p-6 border-b border-white/20 flex justify-between items-center">
       <h2 class="text-xl font-bold text-white/90 flex items-center">
@@ -78,7 +78,7 @@
     </div>
 
     <!-- 模板列表 -->
-    <div class="p-6 space-y-3 overflow-y-auto max-h-[calc(100vh-290px)] custom-scrollbar">
+    <div class="flex-1 p-6 pb-4 space-y-3 overflow-y-auto custom-scrollbar">
       <button
         v-for="template in filteredTemplates"
         :key="template.id"
